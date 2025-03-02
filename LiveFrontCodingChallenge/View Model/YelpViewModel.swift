@@ -56,13 +56,14 @@ class YelpViewModel: ObservableObject {
     
     init(yelpService: YelpServiceProtocol = YelpService()) {
         self.yelpService = yelpService
+        APIConfig.setupAPIKey()
     }
         
     /// Searches for businesses based on the current search text and location.
     @MainActor
     func searchBusinesses(query: String? = nil) {
         // Use provided query or fall back to the stored value
-        let searchTerm: String? = query ?? searchText
+        let searchTerm = query ?? searchText
         
         // Check if we have a location to search with
         guard !searchLocation.isEmpty else {
@@ -73,46 +74,27 @@ class YelpViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
         
-         Task {
-             do {
-                         var components = URLComponents(string: "https://api.yelp.com/v3/businesses/search")!
-                         components.queryItems = [
-                                    URLQueryItem(name: "location", value: searchLocation),
-                                    URLQueryItem(name: "limit", value: "20")
-                                ]
-                         
-                         if let searchTerm = searchTerm, !searchTerm.isEmpty {
-                                    components.queryItems?.append(URLQueryItem(name: "term", value: searchTerm))
-                                }
-                         
-                         var request = URLRequest(url: components.url!)
-                         request.httpMethod = "GET"
-                         
-                         request.addValue("Bearer 0Pf310N0KSmInyvZ45jFcY8D24VrXYcsVd5_Ow3Izn8-W5-y3R6Tf6R-GQUo_BZ1K1WdZEGoh09lZGmvh3EZIqag7vDiCi-lWMpYOLIMoVg1a8t5Ni9aiUkUCJzDZ3Yx", forHTTPHeaderField: "Authorization")
-                         request.addValue("application/json", forHTTPHeaderField: "accept")
-                         
-                         let (data, response) = try await URLSession.shared.data(for: request)
-                         
-                         if let httpResponse = response as? HTTPURLResponse {
-                                    print("Response status code: \(httpResponse.statusCode)")
-                                    
-                                    if httpResponse.statusCode == 200 {
-                                            let decoder = JSONDecoder()
-                                            let searchResponse = try decoder.decode(YelpBusinessSearchResponse.self, from: data)
-                                            self.businesses = searchResponse.businesses
-                                            self.isLoading = false
-                                        } else {
-                                                let errorText = String(data: data, encoding: .utf8) ?? "Unknown error"
-                                                print("Error response: \(errorText)")
-                                                self.errorMessage = "API Error: HTTP \(httpResponse.statusCode)"
-                                                self.isLoading = false
-                                            }
-                                }
-                     } catch {
-                                print("Error: \(error)")
-                                self.errorMessage = "Error: \(error.localizedDescription)"
-                                self.isLoading = false
-                            }
+        Task {
+            do {
+                let results = try await yelpService.searchBusinesses(
+                    for: searchLocation,
+                    term: searchTerm.isEmpty ? nil : searchTerm,
+                    categories: nil,
+                    limit: 20,
+                    sortBy: "best_match"
+                )
+                
+                self.businesses = results
+                self.isLoading = false
+                
+                if results.isEmpty {
+                    self.errorMessage = "No results found"
+                }
+            } catch {
+                self.businesses = []
+                self.isLoading = false
+                self.errorMessage = handleError(error)
+            }
         }
     }
     
