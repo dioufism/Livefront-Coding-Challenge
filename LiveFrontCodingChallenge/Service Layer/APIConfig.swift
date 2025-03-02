@@ -43,6 +43,7 @@ struct APIConfig {
             let urlString =  baseURL + path
             var components = URLComponents(string: urlString)
             components?.queryItems = try queryItems
+            print("this is my url\(urlString)")
             return components?.url
         }
         

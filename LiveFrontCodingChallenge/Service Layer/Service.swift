@@ -57,7 +57,7 @@ final class YelpService: YelpServiceProtocol {
     /// generic helper method to perform request
     private func performRequest<T: Decodable>(for url: URL) async throws -> T {
         var request =  URLRequest(url: url)
-        request.httpMethod = ".GET"
+        request.httpMethod = "GET"
         
         do {
             let apiKey =  try APIConfig.getAPIKey()
