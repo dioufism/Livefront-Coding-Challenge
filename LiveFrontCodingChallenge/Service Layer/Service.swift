@@ -25,6 +25,7 @@ protocol YelpServiceProtocol {
 }
 
 final class YelpService: YelpServiceProtocol {
+
     /// Injected to allow for custom configuration and testing.
     private let session: URLSession
     
