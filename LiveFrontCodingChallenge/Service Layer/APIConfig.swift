@@ -30,7 +30,7 @@ struct APIConfig {
     }
     
     enum Endpoint {
-        case businessSearch(location: String?, term: String?, categories: String?, limit: Int, sortBy: String)
+        case businessSearch(location: String?, term: String?, categories: String?, limit: Int, sortBy: SortOption)
         
         var path: String {
             switch self {
@@ -54,7 +54,7 @@ struct APIConfig {
                     var items: [URLQueryItem] = [
                     URLQueryItem(name: "location", value: location),
                     URLQueryItem(name: "limit", value: String(limit)),
-                    URLQueryItem(name: "sort_by", value: sortBy)
+                    URLQueryItem(name: "sort_by", value: sortBy.rawValue)
                     ]
                     
                     if let term = term {

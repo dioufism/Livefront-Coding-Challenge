@@ -21,7 +21,7 @@ enum NetworkError: Error {
 }
 
 protocol YelpServiceProtocol {
-    func searchBusinesses(for location: String, term: String?, categories: String?, limit: Int, sortBy: String) async throws -> [YelpBusiness]
+    func searchBusinesses(for location: String, term: String?, categories: String?, limit: Int, sortBy: SortOption) async throws -> [YelpBusiness]
 }
 
 final class YelpService: YelpServiceProtocol {
@@ -41,7 +41,7 @@ final class YelpService: YelpServiceProtocol {
                           term: String?,
                           categories: String?,
                           limit: Int = 20,
-                          sortBy: String = "best_match") async throws -> [YelpBusiness] {
+                          sortBy: SortOption = .bestMatch) async throws -> [YelpBusiness] {
         guard let url = try APIConfig.Endpoint.businessSearch(location: location,
                                                               term: term,
                                                               categories: categories,

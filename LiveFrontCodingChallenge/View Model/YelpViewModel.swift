@@ -43,13 +43,21 @@ enum SortOption: String, CaseIterable, Identifiable {
         case .distance: return "Distance"
         }
     }
+    
+    var apiValue: String {
+        return self.rawValue
+    }
+    
+    static var `default`: SortOption {
+        return .bestMatch
+    }
 }
 
 class YelpViewModel: ObservableObject {
-    @Published var searchText = ""
-    @Published var searchLocation = ""
+    @Published var searchText: String  = ""
+    @Published var searchLocation: String = ""
     @Published var businesses: [YelpBusiness] = []
-    @Published var isLoading = false
+    @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     
     private let yelpService: YelpServiceProtocol
@@ -81,7 +89,7 @@ class YelpViewModel: ObservableObject {
                     term: searchTerm.isEmpty ? nil : searchTerm,
                     categories: nil,
                     limit: 20,
-                    sortBy: "best_match"
+                    sortBy: .bestMatch
                 )
                 
                 self.businesses = results

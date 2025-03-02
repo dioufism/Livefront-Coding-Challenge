@@ -20,9 +20,9 @@ struct YelpRegion: Decodable {
 struct YelpBusiness: Decodable, Identifiable {
     let id: String
     let name: String
-    let imageURL: URL?
+    let imageURL: String?
     let isClosed: Bool
-    let url: URL
+    let url: String?
     let reviewCount: Int
     let categories: [YelpCategory]
     let rating: Double

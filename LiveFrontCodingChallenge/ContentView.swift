@@ -9,7 +9,7 @@ import SwiftUI
 
 import SwiftUI
 
-struct ContentView: View {
+struct HomeView: View {
     @StateObject private var viewModel = YelpViewModel()
     @State private var searchText = ""
     
@@ -39,46 +39,43 @@ struct ContentView: View {
             }
             
             List(viewModel.businesses) { business in
-                HStack {
-//                    Image(systemName: "person")url
-                    HStack {
-                        AsyncImage(url: business.imageURL) { image in
-                            image.resizable()
-                        } placeholder: {
-                            ProgressView()
-                        }
-                        .frame(width: 100, height: 100)
-                            
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 5) {
-                        
-                        Text(business.name)
-                            .font(.headline)
-                        
-                        Text(business.categories.map { $0.title }.joined(separator: ", "))
-                            .font(.subheadline)
-                        
-                        HStack {
-                            
-                            Text("Rating: \(business.rating, specifier: "%.1f")")
-                            Text("•")
-                            Text("\(business.reviewCount) reviews")
-                            if let price = business.price {
-                                Text("•")
-                                Text(price)
-                            }
-                        }
-                        .font(.caption)
-                    }
-                    .padding(.vertical, 5)
-                }
+                BusinessRow(business: business)
             }
+            .listStyle(.plain)
         }
         .navigationTitle("Yelp Search")
     }
 }
 
+struct BusinessRow: View {
+    let business: YelpBusiness
+    
+    var body: some View {
+        HStack {
+            CachedImageView(url: business.imageURL, imageWidth: 70, imageHeight: 70, showError: false)
+            VStack(alignment: .leading, spacing: 5) {
+                Text(business.name)
+                    .font(.headline)
+                
+                Text(business.categories.map { $0.title }.joined(separator: ", "))
+                    .font(.subheadline)
+                
+                HStack {
+                    Text("Rating: \(business.rating, specifier: "%.1f")")
+                    Text("•")
+                    Text("\(business.reviewCount) reviews")
+                    if let price = business.price {
+                        Text("•")
+                        Text(price)
+                    }
+                }
+                .font(.caption)
+            }
+            .padding(.vertical, 5)
+        }
+    }
+}
+
 #Preview {
-    ContentView()
+    HomeView()
 }
