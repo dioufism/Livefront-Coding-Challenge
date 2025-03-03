@@ -17,7 +17,7 @@ struct YelpRegion: Decodable {
     let center: YelpCoordinates
 }
 
-struct YelpBusiness: Decodable, Identifiable {
+struct YelpBusiness: Decodable, Identifiable, Hashable , Equatable{
     let id: String
     let name: String
     let imageURL: String?
@@ -43,17 +43,17 @@ struct YelpBusiness: Decodable, Identifiable {
     }
 }
 
-struct YelpCategory: Decodable {
+struct YelpCategory: Decodable, Equatable {
     let alias: String
     let title: String
 }
 
-struct YelpCoordinates: Decodable {
+struct YelpCoordinates: Decodable, Equatable {
     let latitude: Double
     let longitude: Double
 }
 
-struct YelpLocation: Decodable {
+struct YelpLocation: Decodable, Equatable {
     let address1: String?
     let address2: String?
     let address3: String?
@@ -67,5 +67,17 @@ struct YelpLocation: Decodable {
         case address1, address2, address3, city, country, state
         case zipCode = "zip_code"
         case displayAddress = "display_address"
+    }
+}
+
+extension YelpBusiness {
+    static func == (lhs: YelpBusiness, rhs: YelpBusiness) -> Bool {
+        return lhs.id == rhs.id && lhs.id == rhs.id
+    }
+
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        hasher.combine(id)
     }
 }
