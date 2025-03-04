@@ -29,6 +29,7 @@ extension ImageCache {
     }
     
     func set(image: UIImage, forKey key: String) {
-        cache.setObject(image, forKey: NSString(string: key))
+        let cost = Int(image.size.width * image.size.height * 4) // 4 bytes per pixel
+        cache.setObject(image, forKey: NSString(string: key), cost: cost)
     }
 }

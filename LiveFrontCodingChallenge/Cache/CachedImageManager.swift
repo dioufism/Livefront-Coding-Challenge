@@ -21,14 +21,25 @@ final class CachedImageManager: ObservableObject {
             state = .success(uiImage)
             return
         }
+        
         do {
             let data = try await imageRetriver.fetch(imageURL)
-            guard let image = UIImage(data: data) else {
+            
+            let processedImage = await Task.detached(priority: .userInitiated) { () -> UIImage? in
+                guard let image = UIImage(data: data) else { return nil }
+                
+                let renderer = UIGraphicsImageRenderer(size: CGSize(width: 200, height: 200))
+                return renderer.image { ctx in
+                    image.draw(in: CGRect(origin: .zero, size: CGSize(width: 200, height: 200)))
+                }
+            }.value
+            
+            if let image = processedImage {
+                state = .success(image)
+                cache.set(image: image, forKey: imageURL)
+            } else {
                 state = .failed(CachedImageError.invalidData)
-                return
             }
-            state = .success(image)
-            cache.set(image: image, forKey: imageURL)
         } catch {
             state = .failed(error)
         }
