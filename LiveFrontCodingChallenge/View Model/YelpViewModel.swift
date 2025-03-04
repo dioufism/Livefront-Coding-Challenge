@@ -59,6 +59,12 @@ class YelpViewModel: ObservableObject {
     @Published var businesses: [YelpBusiness] = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    @Published var isLoadingMore: Bool = false
+    @Published var hasMoreResults: Bool = true
+    
+    private var currentPage: Int = 0
+    private var totalResults: Int = 0
+    private let pageSize: Int = 20
     
     private let yelpService: YelpServiceProtocol
     
@@ -79,33 +85,90 @@ class YelpViewModel: ObservableObject {
             return
         }
         
+        currentPage = 0
+        hasMoreResults = true
+        totalResults = 0
         isLoading = true
         errorMessage = nil
         
         Task {
             do {
-                let results = try await yelpService.searchBusinesses(
+                let result = try await yelpService.searchBusinesses(
                     for: searchLocation,
                     term: searchTerm.isEmpty ? nil : searchTerm,
                     categories: nil,
-                    limit: 20,
-                    sortBy: .bestMatch
-                )
+                    limit: pageSize,
+                    offset: 0,
+                    sortBy: .bestMatch)
                 
-                self.businesses = results
+                self.businesses = result.businesses
+                self.totalResults = result.total
+                self.currentPage = 1
+                self.hasMoreResults = result.businesses.count < result.total
                 self.isLoading = false
                 
-                if results.isEmpty {
+                if result.businesses.isEmpty {
                     self.errorMessage = "No results found"
                 }
             } catch {
                 self.businesses = []
                 self.isLoading = false
                 self.errorMessage = handleError(error)
+                self.hasMoreResults = false
             }
         }
     }
-    
+
+    @MainActor
+    func loadMoreBusinessesIfNeeded(currentItem: YelpBusiness?) {
+        guard !isLoadingMore && hasMoreResults else {
+            return
+        }
+        
+        guard let currentItem = currentItem else {
+            return
+        }
+        
+        guard let index = businesses.firstIndex(where: { $0.id == currentItem.id }) else {
+            return
+        }
+        
+        let thresholdIndex = businesses.count - 3
+        if index >= thresholdIndex {
+            loadMoreBusinesses()
+        }
+    }
+
+    private func loadMoreBusinesses() {
+        isLoadingMore = true
+        let offset = currentPage * pageSize
+        Task {
+            do {
+                let result = try await yelpService.searchBusinesses(
+                    for: searchLocation,
+                    term: searchText.isEmpty ? nil : searchText,
+                    categories: nil,
+                    limit: pageSize,
+                    offset: offset,
+                    sortBy: .bestMatch)
+                
+                await MainActor.run {
+                    self.businesses.append(contentsOf: result.businesses)
+                    self.currentPage += 1
+                    self.hasMoreResults = self.businesses.count < self.totalResults
+                    self.isLoadingMore = false
+                }
+            }
+            catch {
+                await MainActor.run {
+                    self.isLoadingMore = false
+                    ///log error
+                    print("Error loading more results: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+
     /// Converts network errors to user-friendly messages.
     private func handleError(_ error: Error) -> String {
         switch error {

@@ -55,7 +55,8 @@ struct HomeView: View {
                         // Show list when we have results
                         BusinessListContent(
                             businesses: isSearchSubmitted ? viewModel.businesses : filteredBusinesses,
-                            onRefresh: { viewModel.searchBusinesses() }
+                            onRefresh: { viewModel.searchBusinesses() },
+                            viewModel: viewModel
                         )
                     } else if let error = viewModel.errorMessage {
                         // Show error
@@ -234,19 +235,27 @@ struct LocationSelectionView: View {
 struct BusinessListContent: View {
     let businesses: [YelpBusiness]
     let onRefresh: () -> Void
+    @ObservedObject var viewModel: YelpViewModel
     
     var body: some View {
         List {
-            ForEach(businesses) {
-                business in
+            ForEach(businesses) { business in
                 NavigationLink(value: business) {
                     BusinessCardView(business: business)
                 }
                 .onAppear {
-                    if business.id == businesses.last?.id ||
-                        business.id == businesses.dropLast().last?.id {
-                    }
+                    viewModel.loadMoreBusinessesIfNeeded(currentItem: business)
                 }
+            }
+            
+            if viewModel.isLoadingMore {
+                HStack {
+                    Spacer()
+                    ProgressView()
+                        .padding()
+                    Spacer()
+                }
+                .listRowSeparator(.hidden)
             }
         }
         .listStyle(.plain)
@@ -254,8 +263,7 @@ struct BusinessListContent: View {
             try? await Task.sleep(nanoseconds: 1_000_000_000)
             onRefresh()
         }
-        .navigationDestination(for: YelpBusiness.self) {
-            business in
+        .navigationDestination(for: YelpBusiness.self) { business in
             BusinessDetailView(business: business)
         }
     }

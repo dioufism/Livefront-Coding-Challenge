@@ -21,7 +21,7 @@ enum NetworkError: Error {
 }
 
 protocol YelpServiceProtocol {
-    func searchBusinesses(for location: String, term: String?, categories: String?, limit: Int, sortBy: SortOption) async throws -> [YelpBusiness]
+    func searchBusinesses(for location: String, term: String?, categories: String?, limit: Int, offset: Int, sortBy: SortOption) async throws -> (businesses: [YelpBusiness], total: Int)
 }
 
 final class YelpService: YelpServiceProtocol {
@@ -37,21 +37,30 @@ final class YelpService: YelpServiceProtocol {
         self.decoder = decoder
     }
     
-    func searchBusinesses(for location: String,
-                          term: String?,
-                          categories: String?,
-                          limit: Int = 20,
-                          sortBy: SortOption = .bestMatch) async throws -> [YelpBusiness] {
-        guard let url = try APIConfig.Endpoint.businessSearch(location: location,
-                                                              term: term,
-                                                              categories: categories,
-                                                              limit: limit,
-                                                              sortBy: sortBy).url() else {
+    func searchBusinesses(for location: String, term: String?, categories: String?, limit: Int, offset: Int, sortBy: SortOption) async throws -> (businesses: [YelpBusiness], total: Int) {
+
+        let endpoint = APIConfig.Endpoint.businessSearch(
+            location: location,
+            term: term,
+            categories: categories,
+            limit: limit,
+            sortBy: sortBy
+        )
+        
+        guard var urlComponents = URLComponents(string: Secrets.baseURL + endpoint.path) else {
+            throw NetworkError.invalidURL
+        }
+        
+        var queryItems = try endpoint.queryItems
+        queryItems.append(URLQueryItem(name: "offset", value: String(offset)))
+        urlComponents.queryItems = queryItems
+        
+        guard let url = urlComponents.url else {
             throw NetworkError.invalidURL
         }
         
         let response: YelpBusinessSearchResponse = try await performRequest(for: url)
-        return response.businesses
+        return (businesses: response.businesses, total: response.total)
     }
     
     /// generic helper method to perform request
