@@ -125,7 +125,7 @@ struct HomeView: View {
     }
 }
 
-struct EmptyStateView: View {
+private struct EmptyStateView: View {
     var body: some View {
         VStack(spacing: 20) {
             Image(systemName: "magnifyingglass")
@@ -146,7 +146,7 @@ struct EmptyStateView: View {
     }
 }
 
-struct LocationPromptView: View {
+private struct LocationPromptView: View {
     let onSelectLocation: () -> Void
     
     var body: some View {
@@ -176,7 +176,7 @@ struct LocationPromptView: View {
     }
 }
 
-struct LocationSelectionView: View {
+private struct LocationSelectionView: View {
     @State private var searchLocation = ""
     @Binding var selectedLocation: String
     
@@ -232,7 +232,7 @@ struct LocationSelectionView: View {
     }
 }
 
-struct BusinessListContent: View {
+private struct BusinessListContent: View {
     let businesses: [YelpBusiness]
     let onRefresh: () -> Void
     @Bindable var viewModel: YelpViewModel
@@ -269,7 +269,7 @@ struct BusinessListContent: View {
     }
 }
 
-struct LoadingView: View {
+private struct LoadingView: View {
     let message: String
     
     var body: some View {
