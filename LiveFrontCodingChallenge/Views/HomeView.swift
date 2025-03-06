@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct HomeView: View {
-    @StateObject private var viewModel = YelpViewModel()
+    @State private var viewModel = YelpViewModel()
     @State private var searchText: String = ""
     @State private var isLocationSheetPresented = false
     @State private var isSearchSubmitted = false
@@ -235,7 +235,7 @@ struct LocationSelectionView: View {
 struct BusinessListContent: View {
     let businesses: [YelpBusiness]
     let onRefresh: () -> Void
-    @ObservedObject var viewModel: YelpViewModel
+    @Bindable var viewModel: YelpViewModel
     
     var body: some View {
         List {

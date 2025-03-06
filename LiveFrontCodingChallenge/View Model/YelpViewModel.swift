@@ -53,14 +53,15 @@ enum SortOption: String, CaseIterable, Identifiable {
     }
 }
 
-class YelpViewModel: ObservableObject {
-    @Published var searchText: String  = ""
-    @Published var searchLocation: String = ""
-    @Published var businesses: [YelpBusiness] = []
-    @Published var isLoading: Bool = false
-    @Published var errorMessage: String?
-    @Published var isLoadingMore: Bool = false
-    @Published var hasMoreResults: Bool = true
+@Observable
+class YelpViewModel {
+    var searchText: String  = ""
+    var searchLocation: String = ""
+    var businesses: [YelpBusiness] = []
+    var isLoading: Bool = false
+    var errorMessage: String?
+    var isLoadingMore: Bool = false
+    var hasMoreResults: Bool = true
     
     private var currentPage: Int = 0
     private var totalResults: Int = 0
