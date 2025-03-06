@@ -21,23 +21,23 @@ enum NetworkError: Error {
 }
 
 protocol YelpServiceProtocol {
-    func searchBusinesses(for location: String, term: String?, categories: String?, limit: Int, offset: Int, sortBy: SortOption) async throws -> (businesses: [YelpBusiness], total: Int)
+    func searchBusinesses(for location: String, term: String?, categories: String?, limit: Int, offset: Int, sortBy: SortOption) async throws -> YelpBusinessSearchResponse
 }
 
 final class YelpService: YelpServiceProtocol {
 
     /// Injected to allow for custom configuration and testing.
-    private let session: URLSession
+     let session: URLSession
     
     /// Injected to allow for custom decoding strategies.
-    private let decoder: JSONDecoder
+     let decoder: JSONDecoder
 
     init(session: URLSession = .shared, decoder: JSONDecoder = .init()) {
         self.session = session
         self.decoder = decoder
     }
     
-    func searchBusinesses(for location: String, term: String?, categories: String?, limit: Int, offset: Int, sortBy: SortOption) async throws -> (businesses: [YelpBusiness], total: Int) {
+    func searchBusinesses(for location: String, term: String?, categories: String?, limit: Int, offset: Int, sortBy: SortOption) async throws -> YelpBusinessSearchResponse {
 
         let endpoint = APIConfig.Endpoint.businessSearch(
             location: location,
@@ -60,7 +60,7 @@ final class YelpService: YelpServiceProtocol {
         }
         
         let response: YelpBusinessSearchResponse = try await performRequest(for: url)
-        return (businesses: response.businesses, total: response.total)
+        return response
     }
     
     /// generic helper method to perform request
