@@ -55,7 +55,7 @@ struct HomeView: View {
                         // Show list when we have results
                         BusinessListContent(
                             businesses: isSearchSubmitted ? viewModel.businesses : filteredBusinesses,
-                            onRefresh: { viewModel.searchBusinesses() },
+                            onRefresh: { viewModel.searchBestMatchBusinesses() },
                             viewModel: viewModel
                         )
                     } else if let error = viewModel.errorMessage {
@@ -63,7 +63,7 @@ struct HomeView: View {
                         ErrorView(
                             // TODO: There are no available businesses at this location
                             message: error,
-                            onRetry: { viewModel.searchBusinesses() }
+                            onRetry: { viewModel.searchBestMatchBusinesses() }
                         )
                     } else {
                         // Initial or empty state
@@ -87,7 +87,7 @@ struct HomeView: View {
                     // Only search when location is set
                     isSearchSubmitted = true
                     viewModel.searchText = searchText
-                    viewModel.searchBusinesses(query: searchText)
+                    viewModel.searchBestMatchBusinesses(query: searchText)
                 } else {
                     // Show location sheet if trying to search without location
                     isLocationSheetPresented = true
@@ -102,7 +102,7 @@ struct HomeView: View {
                         isLocationSheetPresented = false
                         if !viewModel.searchLocation.isEmpty {
                             // After location is selected, perform search with current search term
-                            viewModel.searchBusinesses(query: searchText.isEmpty ? "" : searchText)
+                            viewModel.searchBestMatchBusinesses(query: searchText.isEmpty ? "" : searchText)
                         }
                     }
                 )

@@ -51,7 +51,7 @@ final class YelpViewModelTests: XCTestCase {
         sut.searchLocation = ""
         
         // When
-        sut.searchBusinesses()
+        sut.searchBestMatchBusinesses()
         
         // Then
         XCTAssertEqual(sut.errorMessage, "Please enter a location to search")
@@ -69,7 +69,7 @@ final class YelpViewModelTests: XCTestCase {
         sut.searchText = "coffee"
         
         // When
-        sut.searchBusinesses()
+        sut.searchBestMatchBusinesses()
         
         // Wait for the async task to complete
         await waitForAsyncOperations()
@@ -101,7 +101,7 @@ final class YelpViewModelTests: XCTestCase {
         sut.searchText = "xyz123"
         
         // When
-        sut.searchBusinesses()
+        sut.searchBestMatchBusinesses()
         
         // Wait for the async task to complete
         await waitForAsyncOperations()
@@ -122,7 +122,7 @@ final class YelpViewModelTests: XCTestCase {
         sut.searchText = "coffee" // This should be ignored
         
         // When
-        sut.searchBusinesses(query: "tea") // This should be used
+        sut.searchBestMatchBusinesses(query: "tea") // This should be used
         
         // Wait for the async task to complete
         await waitForAsyncOperations()
@@ -150,7 +150,7 @@ final class YelpViewModelTests: XCTestCase {
         sut.searchLocation = "San Francisco"
         
         // When
-        sut.searchBusinesses()
+        sut.searchBestMatchBusinesses()
         
         // Wait for the async task to complete
         await waitForAsyncOperations()
@@ -174,7 +174,7 @@ final class YelpViewModelTests: XCTestCase {
         sut.searchLocation = "xyz123"
         
         // When
-        sut.searchBusinesses()
+        sut.searchBestMatchBusinesses()
         
         // Wait for the async task to complete
         await waitForAsyncOperations()
@@ -197,7 +197,7 @@ final class YelpViewModelTests: XCTestCase {
         sut.searchLocation = "San Francisco"
         
         // When
-        sut.searchBusinesses()
+        sut.searchBestMatchBusinesses()
         
         // Wait for the async task to complete
         await waitForAsyncOperations()
@@ -216,7 +216,7 @@ final class YelpViewModelTests: XCTestCase {
         try setupSuccessResponse(businessCount: 20, totalCount: 40)
         
         sut.searchLocation = "San Francisco"
-        sut.searchBusinesses()
+        sut.searchBestMatchBusinesses()
         
         // Wait for the initial load to complete
         await waitForAsyncOperations()
@@ -250,7 +250,7 @@ final class YelpViewModelTests: XCTestCase {
         try setupSuccessResponse(businessCount: 20, totalCount: 40)
         
         sut.searchLocation = "San Francisco"
-        sut.searchBusinesses()
+        sut.searchBestMatchBusinesses()
         
         // Wait for the initial load to complete
         await waitForAsyncOperations()
@@ -275,7 +275,7 @@ final class YelpViewModelTests: XCTestCase {
         try setupSuccessResponse(businessCount: 20, totalCount: 40)
         
         sut.searchLocation = "San Francisco"
-        sut.searchBusinesses()
+        sut.searchBestMatchBusinesses()
         
         // Wait for the initial load to complete
         await waitForAsyncOperations()
@@ -300,7 +300,7 @@ final class YelpViewModelTests: XCTestCase {
         try setupSuccessResponse(businessCount: 20, totalCount: 20)
         
         sut.searchLocation = "San Francisco"
-        sut.searchBusinesses()
+        sut.searchBestMatchBusinesses()
         
         // Wait for the initial load to complete
         await waitForAsyncOperations()
@@ -326,7 +326,7 @@ final class YelpViewModelTests: XCTestCase {
         try setupSuccessResponse(businessCount: 5, totalCount: 10)
         
         sut.searchLocation = "San Francisco"
-        sut.searchBusinesses()
+        sut.searchBestMatchBusinesses()
         
         // Wait for the initial load to complete
         await waitForAsyncOperations()

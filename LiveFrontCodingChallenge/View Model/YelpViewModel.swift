@@ -30,7 +30,7 @@ final class YelpViewModel {
         
     /// Searches for businesses based on the current search text and location.
     @MainActor
-    func searchBusinesses(query: String? = nil) {
+    func searchBestMatchBusinesses(query: String? = nil) {
         // Use provided query or fall back to the stored value
         let searchTerm = query ?? searchText
         
