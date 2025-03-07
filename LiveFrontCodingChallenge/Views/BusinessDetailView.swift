@@ -14,21 +14,29 @@ struct BusinessDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 if let imageURL = business.imageURL {
-                    BusinesDisplayImageView(imageURL: imageURL)
-                    
-                    VStack(alignment: .leading, spacing: 12) {
-                        BusinessHeaderInfoView(business: business)
-                        
-                        Divider()
-                        
-                        ContactInfoView(business: business)
-                        
-                        Divider()
-                        
-                        BusinessActionButtonsView(business: business)
-                    }
-                    .padding()
+                    CachedImageView(url: imageURL,
+                                    imageWidth: .infinity,
+                                    imageHeight: 200,
+                                    showError: false)
+                    .aspectRatio(contentMode: .fill)
+                    .frame(height: 200)
+                    .clipped()
+                    .shadow(color: Color.black.opacity(0.5), radius: 8, x: 0, y: 5)
+                    .padding(.horizontal)
                 }
+                
+                VStack(alignment: .leading, spacing: 12) {
+                    BusinessHeaderInfoView(business: business)
+                    
+                    Divider()
+                    
+                    ContactInfoView(business: business)
+                    
+                    Divider()
+                    
+                    BusinessActionButtonsView(business: business)
+                }
+                .padding()
             }
         }
         .navigationTitle(business.name)
@@ -36,32 +44,32 @@ struct BusinessDetailView: View {
     }
 }
 
-struct BusinessHeaderInfoView: View {
+private struct BusinessHeaderInfoView: View {
     let business: YelpBusiness
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(business.name)
-            .font(.title)
-            .fontWeight(.bold)
+                .font(.title)
+                .fontWeight(.bold)
             
             HStack {
                 if !business.categories.isEmpty {
                     Text(business.categories.map {
                         $0.title
                     }
-                    .joined(separator: ", "))
+                        .joined(separator: ", "))
                     .font(.subheadline)
                     .foregroundColor(.gray)
                 }
                 
                 if let price = business.price {
                     Text("•")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
                     Text(price)
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
                 }
             }
             
@@ -69,7 +77,7 @@ struct BusinessHeaderInfoView: View {
                 RatingView(rating: business.rating, size: .medium)
                 
                 Text("\(business.rating, specifier: "%.1f") (\(business.reviewCount) reviews)")
-                .foregroundColor(.gray)
+                    .foregroundColor(.gray)
             }
         }
     }
@@ -83,27 +91,27 @@ private struct ContactInfoView: View {
             if !business.location.displayAddress.isEmpty {
                 Label {
                     Text(business.location.displayAddress.joined(separator: ", "))
-                    .font(.subheadline)
+                        .font(.subheadline)
                 }
                 
                 icon: {
                     Image(systemName: "mappin.circle.fill")
-                    .foregroundColor(.red)
+                        .foregroundColor(.red)
                 }
             }
             
             Label {
                 Text(business.displayPhone)
-                .font(.subheadline)
+                    .font(.subheadline)
             }
             
             icon: {
                 Image(systemName: "phone.fill")
-                .foregroundColor(.green)
+                    .foregroundColor(.green)
             }
         }
     }
-
+    
 }
 
 private struct BusinesDisplayImageView: View {
@@ -112,9 +120,9 @@ private struct BusinesDisplayImageView: View {
     var body: some View {
         if let imageURL = imageURL {
             CachedImageView(url: imageURL, imageWidth: .infinity, imageHeight: 200, showError: true)
-            .aspectRatio(contentMode: .fill)
-            .frame(height: 200)
-            .clipped()
+                .aspectRatio(contentMode: .fill)
+                .frame(height: 200)
+                .clipped()
         }
     }
 }
