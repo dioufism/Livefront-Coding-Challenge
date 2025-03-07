@@ -64,6 +64,7 @@ private extension CachedImageView {
                     .font(.system(size: 40))
                     .foregroundColor(.gray)
                 Text("No Image Available")
+                    .lineLimit(1)
                     .font(.caption)
                     .foregroundColor(.gray)
             }

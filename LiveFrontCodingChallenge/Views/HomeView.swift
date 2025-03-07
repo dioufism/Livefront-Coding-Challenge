@@ -94,7 +94,7 @@ struct HomeView: View {
                 }
             }
             .disableAutocorrection(true)
-            .navigationTitle("Yelp Search")
+            .navigationTitle("What's Cooking")
             .sheet(isPresented: $isLocationSheetPresented) {
                 LocationSelectionView(
                     selectedLocation: $viewModel.searchLocation,
