@@ -12,7 +12,9 @@ struct BusinessCardView: View {
     
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
-            CachedImageView(url: business.imageURL, imageWidth: 60, imageHeight: 60, showError: false)
+            if let imageURL = business.imageURL {
+                CachedImageView(url: imageURL, imageWidth: 60, imageHeight: 60, showError: false)
+            }
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(business.name)

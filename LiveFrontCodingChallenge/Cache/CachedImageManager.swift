@@ -5,7 +5,6 @@
 //  Created by ousmane diouf on 3/2/25.
 //
 
-import Foundation
 import UIKit
 
 final class CachedImageManager: ObservableObject {

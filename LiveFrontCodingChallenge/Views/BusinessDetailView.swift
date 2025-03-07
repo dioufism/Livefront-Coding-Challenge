@@ -13,20 +13,22 @@ struct BusinessDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                BusinesDisplayImageView(imageURL: business.imageURL)
-                
-                VStack(alignment: .leading, spacing: 12) {
-                    BusinessHeaderInfoView(business: business)
+                if let imageURL = business.imageURL {
+                    BusinesDisplayImageView(imageURL: imageURL)
                     
-                    Divider()
-                    
-                    ContactInfoView(business: business)
-                    
-                    Divider()
-                    
-                    BusinessActionButtonsView(business: business)
+                    VStack(alignment: .leading, spacing: 12) {
+                        BusinessHeaderInfoView(business: business)
+                        
+                        Divider()
+                        
+                        ContactInfoView(business: business)
+                        
+                        Divider()
+                        
+                        BusinessActionButtonsView(business: business)
+                    }
+                    .padding()
                 }
-                .padding()
             }
         }
         .navigationTitle(business.name)

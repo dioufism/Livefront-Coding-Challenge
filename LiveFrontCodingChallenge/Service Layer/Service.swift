@@ -7,7 +7,6 @@
 
 import Foundation
 
-
 /// Represents possible errors that can occur during network operations.
 /// Used throughout the app's networking layer for consistent error handling.
 enum NetworkError: Error {
