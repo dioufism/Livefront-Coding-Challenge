@@ -4,57 +4,11 @@
 //
 //  Created by ousmane diouf on 3/1/25.
 //
+
 import SwiftUI
 
-enum LoadingState {
-    case Idle
-    case loading
-    case loaded
-    case error(String)
-    
-    var isLoading: Bool {
-        if case .loading = self {
-            return true
-        }
-        return false
-    }
-    
-    var errorMessage: String? {
-        if case .error(let message) = self {
-            return message
-        }
-        return nil
-    }
-}
-
-enum SortOption: String, CaseIterable, Identifiable {
-    case bestMatch = "best_match"
-    case rating = "rating"
-    case reviewCount = "review_count"
-    case distance = "distance"
-    
-    var id: String { self.rawValue }
-    
-    var displayName: String {
-        switch self {
-        case .bestMatch: return "Best Match"
-        case .rating: return "Highest Rated"
-        case .reviewCount: return "Most Reviewed"
-        case .distance: return "Distance"
-        }
-    }
-    
-    var apiValue: String {
-        return self.rawValue
-    }
-    
-    static var `default`: SortOption {
-        return .bestMatch
-    }
-}
-
 @Observable
-class YelpViewModel {
+final class YelpViewModel {
     var searchText: String  = ""
     var searchLocation: String = ""
     var businesses: [YelpBusiness] = []
@@ -169,22 +123,68 @@ class YelpViewModel {
             }
         }
     }
+}
 
-    /// Converts network errors to user-friendly messages.
-    private func handleError(_ error: Error) -> String {
+extension YelpViewModel {
+    func handleError(_ error: Error) -> String {
+        let nsError = error as NSError
+        
+        // First try to handle HTTP-specific error codes
+        if let httpError = error as? NetworkError, case .httpError(let statusCode) = httpError {
+            return handleHTTPStatusCode(statusCode)
+        }
+        
+        // Next check if it's a server error with an HTTP status code in userInfo
+        if let networkError = error as? NetworkError,
+           case let .serverError(underlyingError) = networkError {
+            // Try to get status code from underlying error
+            let underlyingError = underlyingError as NSError
+            if let statusCode = underlyingError.userInfo["statusCode"] as? Int {
+                return handleHTTPStatusCode(statusCode)
+            }
+        }
+        
+        // Try to extract status code directly from NSError
+        if let statusCode = nsError.userInfo["statusCode"] as? Int {
+            return handleHTTPStatusCode(statusCode)
+        }
+
+        // Fall back to general error types
         switch error {
         case NetworkError.authenticationError:
             return "Authentication failed. Please check your API key."
-        case NetworkError.httpError(let code):
-            return "Server returned error code: \(code)"
+            
         case NetworkError.invalidURL:
             return "Invalid URL. Please check your search parameters."
+            
         case NetworkError.decodingError:
             return "Unable to process server response."
-        case NetworkError.serverError(let err):
+            
+        case let NetworkError.serverError(err):
             return "Server error: \(err.localizedDescription)"
+            
         default:
             return "An unexpected error occurred: \(error.localizedDescription)"
+        }
+    }
+    
+    // Helper to handle HTTP status codes
+    private func handleHTTPStatusCode(_ statusCode: Int) -> String {
+        switch statusCode {
+        case 400:
+            return "Invalid request."
+        case 401:
+            return "Authentication failed. Please check your API key."
+        case 403:
+            return "You don't have permission to access this resource."
+        case 404:
+            return "The requested information could not be found."
+        case 429:
+            return "Too many requests. Please try again later."
+        case 500...599:
+            return "The server encountered an error. Please try again later."
+        default:
+            return "Server returned error code: \(statusCode)"
         }
     }
 }

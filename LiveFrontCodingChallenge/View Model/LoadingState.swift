@@ -1,5 +1,12 @@
+//
+//  LoadingState.swift
+//  LiveFrontCodingChallenge
+//
+//  Created by ousmane diouf on 3/6/25.
+//
+
+
 enum LoadingState {
-    case Idle
     case loading
     case loaded
     case error(String)

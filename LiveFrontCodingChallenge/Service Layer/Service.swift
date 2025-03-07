@@ -65,7 +65,7 @@ final class YelpService: YelpServiceProtocol {
     
     /// generic helper method to perform request
     private func performRequest<T: Decodable>(for url: URL) async throws -> T {
-        var request =  URLRequest(url: url)
+        var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
         do {
@@ -85,16 +85,78 @@ final class YelpService: YelpServiceProtocol {
                 throw NetworkError.invalidResponse
             }
             
-            guard (200...299).contains(httpResponse.statusCode) else {
-                throw NetworkError.httpError(httpResponse.statusCode)
+            if !(200...299).contains(httpResponse.statusCode) {
+                do {
+                    let yelpError = try decoder.decode(YelpAPIError.self, from: data)
+                    let errorDetail = NSError(
+                        domain: "YelpAPI",
+                        code: httpResponse.statusCode,
+                        userInfo: [
+                            "errorCode": yelpError.error.code,
+                            "errorDescription": yelpError.error.description,
+                            "statusCode": httpResponse.statusCode
+                        ]
+                    )
+                    throw NetworkError.serverError(errorDetail)
+                } catch {
+                    if error is DecodingError {
+                        throw NetworkError.httpError(httpResponse.statusCode)
+                    } else {
+                        throw error
+                    }
+                }
             }
             
             return try decoder.decode(T.self, from: data)
             
         } catch let error as DecodingError {
             throw NetworkError.decodingError(error)
+        } catch let error as NetworkError {
+            throw error
         } catch {
             throw NetworkError.serverError(error)
+        }
+    }}
+// MARK: Error handling
+extension YelpService {
+    func handleResponseError(data: Data, response: HTTPURLResponse, decoder: JSONDecoder) throws {
+        // If status code is not in the success range (200-299)
+        guard (200...299).contains(response.statusCode) else {
+            // Special handling for 401 Unauthorized errors
+            if response.statusCode == 401 {
+                // Try to decode as YelpAPIError for more details, but always throw authenticationError
+                do {
+                    let yelpError = try decoder.decode(YelpAPIError.self, from: data)
+                    // log
+                    print("401 Unauthorized: \(yelpError.error.code) - \(yelpError.error.description)")
+                } catch {
+                    //log
+                    print("401 Unauthorized with non-parsable response")
+                }
+                throw NetworkError.authenticationError
+            }
+            
+            // For other error status codes
+            do {
+                let yelpError = try decoder.decode(YelpAPIError.self, from: data)
+                let errorDetail = NSError(
+                    domain: "YelpAPI",
+                    code: response.statusCode,
+                    userInfo: [
+                        "errorCode": yelpError.error.code,
+                        "errorDescription": yelpError.error.description,
+                        "statusCode": response.statusCode
+                    ]
+                )
+                // Use the existing serverError case
+                throw NetworkError.serverError(errorDetail)
+            } catch {
+                if error is DecodingError {
+                    throw NetworkError.httpError(response.statusCode)
+                } else {
+                    throw error
+                }
+            }
         }
     }
 }

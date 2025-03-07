@@ -1,3 +1,12 @@
+//
+//  SortOption.swift
+//  LiveFrontCodingChallenge
+//
+//  Created by ousmane diouf on 3/6/25.
+//
+
+import Foundation
+
 enum SortOption: String, CaseIterable, Identifiable {
     case bestMatch = "best_match"
     case rating = "rating"

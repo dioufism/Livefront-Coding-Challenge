@@ -34,8 +34,8 @@ class YelpServiceTests: XCTestCase {
         
     func test_searchBusinesses_WithEmptyResults_ReturnsEmptyArray() async throws {
         // Given
-        MockURLProtocol.mockData = createEmptyBusinessResponse()
-        MockURLProtocol.mockResponse = createHTTPResponse()
+        MockURLProtocol.mockData = try createEmptyBusinessResponse()
+        MockURLProtocol.mockResponse = try createHTTPResponse()
         
         // When
         let result = try await sut.searchBusinesses(
@@ -54,8 +54,8 @@ class YelpServiceTests: XCTestCase {
     
     func test_searchBusinesses_WithValidResponse_ReturnsBusinessData() async throws {
         // Given
-        MockURLProtocol.mockData = createDetailedBusinessResponse()
-        MockURLProtocol.mockResponse = createHTTPResponse()
+        MockURLProtocol.mockData = try createDetailedBusinessResponse()
+        MockURLProtocol.mockResponse = try createHTTPResponse()
         
         // When
         let result = try await sut.searchBusinesses(
@@ -75,10 +75,10 @@ class YelpServiceTests: XCTestCase {
         XCTAssertEqual(result.businesses[0].price, "$$")
     }
     
-    func test_searchBusinesses_WithHTTPError_ThrowsServerErrorWithHTTPError() async {
+    func test_searchBusinesses_WithHTTPError_HandlesErrorCorrectly() async throws {
         //Given
         MockURLProtocol.mockData = Data()
-        MockURLProtocol.mockResponse = createHTTPResponse(statusCode: 404)
+        MockURLProtocol.mockResponse = try createHTTPResponse(statusCode: 404)
         
         // when
         do {
@@ -92,15 +92,23 @@ class YelpServiceTests: XCTestCase {
             )
             XCTFail("Expected error was not thrown")
         } catch let error as NetworkError {
-            if case .serverError(let underlyingError) = error {
-                // Check if the underlying error is a NetworkError.httpError
+            // With our new implementation, when there's no valid JSON to parse as YelpAPIError,
+            // the service will throw a direct httpError instead of wrapping it
+            switch error {
+            case .httpError(let statusCode):
+                // Direct HTTP error (expected with our updated implementation)
+                XCTAssertEqual(statusCode, 404, "HTTP status code should be 404")
+                
+            case .serverError(let underlyingError):
+                // For backward compatibility, also accept wrapped errors
                 if let networkError = underlyingError as? NetworkError,
                    case .httpError(let statusCode) = networkError {
-                    XCTAssertEqual(statusCode, 404)
+                    XCTAssertEqual(statusCode, 404, "HTTP status code should be 404")
                 } else {
-                    XCTFail("Underlying error is not a NetworkError.httpError: \(underlyingError)")
+                    XCTFail("Unexpected server error: \(underlyingError)")
                 }
-            } else {
+                
+            default:
                 XCTFail("Wrong error type: \(error)")
             }
         } catch {
@@ -108,10 +116,10 @@ class YelpServiceTests: XCTestCase {
         }
     }
     
-    func test_searchBusinesses_WithInvalidJSON_ThrowsDecodingError() async {
+    func test_searchBusinesses_WithInvalidJSON_ThrowsDecodingError() async throws {
         // Given
         MockURLProtocol.mockData = "{ invalid json }".data(using: .utf8)
-        MockURLProtocol.mockResponse = createHTTPResponse()
+        MockURLProtocol.mockResponse = try createHTTPResponse()
         
         // When
         do {
@@ -165,8 +173,8 @@ class YelpServiceTests: XCTestCase {
     
     func test_searchBusinesses_FormatsURLParametersCorrectly() async throws {
         // Given
-        MockURLProtocol.mockData = createEmptyBusinessResponse()
-        MockURLProtocol.mockResponse = createHTTPResponse()
+        MockURLProtocol.mockData = try createEmptyBusinessResponse()
+        MockURLProtocol.mockResponse = try createHTTPResponse()
         
         // When
         _ = try await sut.searchBusinesses(
@@ -197,8 +205,8 @@ class YelpServiceTests: XCTestCase {
     
     func test_searchBusinesses_HandlesSpecialCharactersInParameters() async throws {
         // Given
-        MockURLProtocol.mockData = createEmptyBusinessResponse()
-        MockURLProtocol.mockResponse = createHTTPResponse()
+        MockURLProtocol.mockData = try createEmptyBusinessResponse()
+        MockURLProtocol.mockResponse = try createHTTPResponse()
         
         // When
         _ = try await sut.searchBusinesses(
@@ -224,8 +232,8 @@ class YelpServiceTests: XCTestCase {
     
     func test_searchBusinesses_SetsCorrectAuthorizationHeader() async throws {
         // Given
-        MockURLProtocol.mockData = createEmptyBusinessResponse()
-        MockURLProtocol.mockResponse = createHTTPResponse()
+        MockURLProtocol.mockData = try createEmptyBusinessResponse()
+        MockURLProtocol.mockResponse = try createHTTPResponse()
         
         // When
         _ = try await sut.searchBusinesses(
@@ -247,16 +255,18 @@ class YelpServiceTests: XCTestCase {
 
 // MARK: - Helper Methods
 extension YelpServiceTests {
-    func createHTTPResponse(statusCode: Int = 200) -> HTTPURLResponse {
-        return HTTPURLResponse(
-            url: URL(string: "https://api.yelp.com/v3/businesses/search")!,
+    func createHTTPResponse(statusCode: Int = 200) throws -> HTTPURLResponse {
+        let url =  try XCTUnwrap(URL(string: "https://api.yelp.com/v3/businesses/search"))
+        let response =  try XCTUnwrap(HTTPURLResponse(
+            url: url,
             statusCode: statusCode,
             httpVersion: "HTTP/1.1",
             headerFields: nil
-        )!
+        ))
+        return response
     }
     
-    func createEmptyBusinessResponse() -> Data {
+    func createEmptyBusinessResponse() throws -> Data {
         let jsonString = """
         {
           "businesses": [],
@@ -269,10 +279,11 @@ extension YelpServiceTests {
           }
         }
         """
-        return jsonString.data(using: .utf8)!
+        let data = try XCTUnwrap(jsonString.data(using: .utf8))
+        return data
     }
     
-    func createDetailedBusinessResponse() -> Data {
+    func createDetailedBusinessResponse() throws -> Data {
         let jsonString = """
         {
           "businesses": [
@@ -320,6 +331,8 @@ extension YelpServiceTests {
           }
         }
         """
-        return jsonString.data(using: .utf8)!
+        
+        let data = try XCTUnwrap(jsonString.data(using: .utf8))
+        return data
     }
 }

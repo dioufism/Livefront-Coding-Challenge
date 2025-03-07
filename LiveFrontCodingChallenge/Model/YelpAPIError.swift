@@ -1,6 +1,13 @@
+//
+//  YelpAPIError.swift
+//  LiveFrontCodingChallenge
+//
+//  Created by ousmane diouf on 3/6/25.
+//
+
+
 import Foundation
 
-/// Model for decoding Yelp API error responses
 struct YelpAPIError: Decodable {
     struct ErrorDetail: Decodable {
         let code: String
@@ -8,11 +15,7 @@ struct YelpAPIError: Decodable {
     }
     
     let error: ErrorDetail
-}
 
-/// Extension to add Yelp API specific error types to NetworkError
-extension NetworkError {
-    // Create a NetworkError from a YelpAPIError
     static func yelpError(_ apiError: YelpAPIError, statusCode: Int) -> NetworkError {
         return .serverError(NSError(
             domain: "YelpAPI",
@@ -27,31 +30,26 @@ extension NetworkError {
     
     // Helper to check if an error is a Yelp API error
     static func isYelpError(_ error: Error) -> Bool {
-        guard let nsError = error as? NSError else { return false }
+        let nsError = error as NSError
         return nsError.domain == "YelpAPI"
     }
     
-    // Extract the Yelp error code from an Error
+    // Extract the error code from an Error
     static func getYelpErrorCode(from error: Error) -> String? {
-        guard let nsError = error as? NSError, nsError.domain == "YelpAPI" else { 
-            return nil 
-        }
-        return nsError.userInfo["errorCode"] as? String
+        let nsError = error as NSError
+        return nsError.domain == "YelpAPI" ? nsError.userInfo["errorCode"] as? String : nil
     }
     
-    // Extract the Yelp error description from an Error
+    // Extract the error description from an Error
     static func getYelpErrorDescription(from error: Error) -> String? {
-        guard let nsError = error as? NSError, nsError.domain == "YelpAPI" else { 
-            return nil 
-        }
-        return nsError.userInfo["errorDescription"] as? String
+        let nsError = error as NSError
+        return nsError.domain == "YelpAPI" ? nsError.userInfo["errorDescription"] as? String : nil
     }
     
     // Extract the HTTP status code from an Error
     static func getStatusCode(from error: Error) -> Int? {
-        guard let nsError = error as? NSError, nsError.domain == "YelpAPI" else { 
-            return nil 
-        }
-        return nsError.userInfo["statusCode"] as? Int
+        let nsError = error as NSError
+        return nsError.domain == "YelpAPI" ? nsError.userInfo["statusCode"] as? Int : nil
     }
 }
+
