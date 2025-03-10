@@ -10,7 +10,11 @@ import UIKit
 final class CachedImageManager: ObservableObject {
     @Published private(set) var state: CurrentState?
     
-    private let imageRetriver = ImageRetriver()
+    private let imageRetriver: ImageRetrieverProtocol
+    
+    init(imageRetriver: ImageRetrieverProtocol = ImageRetriver()) {
+        self.imageRetriver = imageRetriver
+    }
     
     @MainActor
     func load(_ imageURL: String, cache: ImageCache = .shared) async {
