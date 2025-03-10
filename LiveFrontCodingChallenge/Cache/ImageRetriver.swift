@@ -7,7 +7,17 @@
 
 import Foundation
 
-struct ImageRetriver {
+protocol ImageRetrieverProtocol {
+    func fetch(_ imageURL: String) async throws -> Data
+}
+
+struct ImageRetriver: ImageRetrieverProtocol {
+    private let session: URLSession
+    
+    init(session: URLSession = .shared) {
+        self.session = session
+    }
+    
     func fetch(_ imageURL: String) async throws -> Data {
         guard let url = URL(string: imageURL) else {
             throw RetriverError.invalidURL
@@ -17,7 +27,7 @@ struct ImageRetriver {
     }
 }
 
-private extension ImageRetriver {
+extension ImageRetriver: Equatable {
     enum RetriverError: Error {
         case invalidURL
     }
