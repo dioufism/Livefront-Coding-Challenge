@@ -9,9 +9,13 @@ import SwiftUI
 
 @main
 struct LiveFrontCodingChallengeApp: App {
+    
+    init() {
+        APIConfig.setupAPIKey()
+    }
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            HomeView()
         }
     }
 }
